@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-const API_URL = "http://localhost:8000/api/v1/vendors";
+const API_URL = "https://bookease-ya30.onrender.com/api/v1/vendors";
 
 function VendorApproval() {
   const [vendors, setVendors] = useState([]);

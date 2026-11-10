@@ -13,7 +13,7 @@ function Profile() {
       setError("");
 
       const response = await axios.get(
-        "http://localhost:8000/api/v1/auth/me",
+        "https://bookease-ya30.onrender.com/api/v1/auth/me",
         { withCredentials: true }
       );
 

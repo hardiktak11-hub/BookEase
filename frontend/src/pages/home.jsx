@@ -15,7 +15,7 @@ function Home() {
     const fetchUser = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8000/api/v1/auth/me",
+          "https://bookease-ya30.onrender.com/api/v1/auth/me",
           { withCredentials: true }
         );
 
@@ -34,7 +34,7 @@ function Home() {
   const handleLogout = async () => {
     try {
       await axios.post(
-        "http://localhost:8000/api/v1/auth/logout",
+        "https://bookease-ya30.onrender.com/api/v1/auth/logout",
         {},
         { withCredentials: true }
       );

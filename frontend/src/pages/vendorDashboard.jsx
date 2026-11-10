@@ -12,7 +12,7 @@ function VendorDashboard() {
   const fetchBookings = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/v1/bookings/vendor-bookings",
+        "https://bookease-ya30.onrender.com/api/v1/bookings/vendor-bookings",
         {
           withCredentials: true,
         }
@@ -44,7 +44,7 @@ function VendorDashboard() {
       setError("");
 
       const response = await axios.patch(
-        `http://localhost:8000/api/v1/bookings/${bookingId}/status`,
+        `https://bookease-ya30.onrender.com/api/v1/bookings/${bookingId}/status`,
         { status },
         {
           withCredentials: true,

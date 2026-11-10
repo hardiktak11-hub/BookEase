@@ -18,7 +18,7 @@ function Booking() {
     const fetchService = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8000/api/v1/services/${serviceId}`
+          `https://bookease-ya30.onrender.com/api/v1/services/${serviceId}`
         );
 
         setService(response.data.service);
@@ -43,7 +43,7 @@ function Booking() {
       setError("");
 
       const response = await axios.post(
-        "http://localhost:8000/api/v1/bookings",
+        "https://bookease-ya30.onrender.com/api/v1/bookings",
         {
           serviceId,
           bookingDate,

@@ -11,7 +11,7 @@ function MyBookings() {
   const fetchBookings = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/v1/bookings/my-bookings",
+        "https://bookease-ya30.onrender.com/api/v1/bookings/my-bookings",
         {
           withCredentials: true,
         }
@@ -39,7 +39,7 @@ function MyBookings() {
   const handleCancel = async (bookingId) => {
     try {
       await axios.patch(
-        `http://localhost:8000/api/v1/bookings/${bookingId}/cancel`,
+        `https://bookease-ya30.onrender.com/api/v1/bookings/${bookingId}/cancel`,
         {},
         {
           withCredentials: true,

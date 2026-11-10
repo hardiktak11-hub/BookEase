@@ -31,8 +31,8 @@ function Register() {
     try {
       const endpoint =
         role === "customer"
-          ? "http://localhost:8000/api/v1/auth/register/customer"
-          : "http://localhost:8000/api/v1/auth/register/vendor";
+          ? "https://bookease-ya30.onrender.com/api/v1/auth/register/customer"
+          : "https://bookease-ya30.onrender.com/api/v1/auth/register/vendor";
 
       const response = await axios.post(endpoint, formData, {
         withCredentials: true,
