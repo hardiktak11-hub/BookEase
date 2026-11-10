@@ -235,10 +235,10 @@ export const loginUser = async (req, res) => {
 
     // Cookie options
     const cookieOptions = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax"
-    };
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
+};
 
     // Send tokens through cookies
     return res
@@ -303,10 +303,10 @@ export const refreshAccessToken = async (req, res) => {
     await user.save({ validateBeforeSave: false });
 
     const cookieOptions = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax"
-    };
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
+};
 
     return res
       .status(200)
@@ -341,10 +341,10 @@ export const logoutUser = async (req, res) => {
     }
 
     const cookieOptions = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax"
-    };
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
+};
 
     return res
       .status(200)
