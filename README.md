@@ -1,23 +1,31 @@
 # BookEase – Service Booking Platform
 
-A full-stack MERN application that connects customers with service providers through a simple and convenient online booking platform.
+**A Full-Stack MERN Application for Seamless Service Booking**
 
-BookEase allows customers to discover services, book appointments, and manage their bookings, while vendors can manage their services and availability. Administrators oversee vendor approvals and platform operations.
+BookEase is a full-stack service booking platform that connects customers with service providers through a simple and convenient online booking system. Customers can explore services and book appointments, vendors can manage their services and availability, and administrators can manage vendor approvals.
 
-## Overview
+## Live Demo
 
-BookEase is designed to simplify the process of finding and booking professional services. It provides separate dashboards and role-based functionality for customers, vendors, and administrators.
+| Resource | Link |
+|---|---|
+| Live Application | https://book-ease-lovat.vercel.app |
+| Backend API | https://bookease-ya30.onrender.com |
+| GitHub Repository | https://github.com/hardiktak11-hub/BookEase |
 
-The platform focuses on secure authentication, service management, appointment scheduling, and booking management.
+## Project Overview
+
+BookEase is inspired by service marketplace platforms such as Urban Company. It provides a centralized platform where customers can discover services, select vendors, and schedule appointments.
+
+The application implements role-based functionality for three types of users: Customers, Vendors, and Administrators.
 
 ## Key Features
 
 ### Customer
 - User registration and login.
-- Browse and explore available services.
+- Browse available services.
 - View service details and vendor information.
 - Book services based on available time slots.
-- View and manage personal bookings.
+- View personal booking history.
 - Cancel bookings.
 - Manage profile information.
 
@@ -30,19 +38,19 @@ The platform focuses on secure authentication, service management, appointment s
 - Access a dedicated vendor dashboard.
 
 ### Admin
-- Dedicated administrator dashboard.
-- Review vendor registration requests.
+- Dedicated admin dashboard.
+- View vendor registration requests.
 - Approve or reject vendor applications.
-- Manage platform operations.
+- Manage vendor approval functionality.
 
 ### Authentication & Security
 - JWT-based authentication.
 - Access token and refresh token implementation.
 - Password hashing using bcrypt.
-- HTTP-only cookie-based token handling.
-- Role-based access control.
-- Protected routes and middleware.
-- Input validation and error handling.
+- HTTP-only cookie-based authentication.
+- Role-based authorization.
+- Protected frontend routes.
+- Authentication and authorization middleware.
 
 ## Technology Stack
 
@@ -51,15 +59,17 @@ The platform focuses on secure authentication, service management, appointment s
 | Frontend | React.js, Vite |
 | Styling | CSS |
 | Backend | Node.js, Express.js |
-| Database | MongoDB |
-| ODM | Mongoose |
+| Database | MongoDB Atlas, Mongoose |
 | Authentication | JWT, bcrypt |
+| API Communication | Axios, REST APIs |
 | API Testing | Postman |
-| Version Control | Git & GitHub |
+| Frontend Hosting | Vercel |
+| Backend Hosting | Render |
+| Version Control | Git, GitHub |
 
 ## Project Architecture
 
-The project follows a client-server architecture.
+BookEase follows a client-server architecture with a modular backend structure.
 
 ```text
 BookEase/
@@ -76,7 +86,6 @@ BookEase/
 │   │   ├── app.js
 │   │   └── server.js
 │   │
-│   ├── .gitignore
 │   └── package.json
 │
 ├── frontend/
@@ -94,19 +103,32 @@ BookEase/
 └── README.md
 ```
 
+## Application Workflow
+
+1. Customers register and log in.
+2. Vendors register and create their vendor profiles.
+3. Administrators review and approve vendor applications.
+4. Approved vendors manage their services.
+5. Vendors configure their availability and time slots.
+6. Customers browse services and create bookings.
+7. Customers and vendors manage their bookings through their respective dashboards.
+
 ## Installation & Setup
 
-Follow these steps to run BookEase locally.
+Follow these instructions to run BookEase locally.
+
+### Prerequisites
+
+- Node.js
+- npm
+- MongoDB database
+- Git
 
 ### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/hardiktak11-hub/BookEase.git
-```
 
-Navigate to the project directory:
-
-```bash
 cd BookEase
 ```
 
@@ -124,10 +146,11 @@ Install dependencies:
 npm install
 ```
 
-Create a `.env` file in the backend directory and configure the following environment variables:
+Create a `.env` file inside the backend directory:
 
 ```env
 PORT=8000
+
 MONGO_URI=your_mongodb_connection_string
 
 ACCESS_TOKEN_SECRET=your_access_token_secret
@@ -135,13 +158,19 @@ REFRESH_TOKEN_SECRET=your_refresh_token_secret
 
 ACCESS_TOKEN_EXPIRY=15m
 REFRESH_TOKEN_EXPIRY=7d
+
+FRONTEND_URL=http://localhost:5173
 ```
 
-Start the backend server using the development script configured in `package.json`:
+Start the backend development server:
 
 ```bash
 npm run dev
 ```
+
+The backend will run on:
+
+`http://localhost:8000`
 
 ### 3. Frontend Setup
 
@@ -157,80 +186,34 @@ Install dependencies:
 npm install
 ```
 
-Start the development server:
+Start the frontend development server:
 
 ```bash
 npm run dev
 ```
 
-Open the local URL displayed in your terminal to access the application.
+Open the local URL displayed in your terminal.
 
-## Application Roles
-
-BookEase supports three distinct user roles:
-
-| Role | Responsibilities |
-|---|---|
-| Customer | Discover services and manage bookings |
-| Vendor | Manage services, availability, and bookings |
-| Admin | Manage vendor approvals and platform operations |
-
-Role-based authorization ensures that users can access only the functionality permitted for their assigned roles.
-
-## API Functionality
+## API Modules
 
 The backend provides RESTful APIs organized into separate route modules:
 
-- **Authentication APIs:** Registration, login, logout, and token management.
-- **Service APIs:** Service listing and service management.
-- **Booking APIs:** Booking creation, retrieval, and cancellation.
-- **Availability APIs:** Vendor availability and time-slot management.
-- **Vendor APIs:** Vendor profile and service management.
-- **Admin APIs:** Vendor approval and administrative operations.
+| Module | Functionality |
+|---|---|
+| Authentication | Registration, login, logout and token management |
+| Services | Service listing and management |
+| Bookings | Booking creation, retrieval and cancellation |
+| Availability | Vendor availability and time-slot management |
+| Vendors | Vendor profiles and vendor management |
+| Admin | Vendor approval and administrative operations |
 
-## Security Considerations
+## Deployment Architecture
 
-- Passwords are hashed before being stored in the database.
-- JWT tokens are used for authentication.
-- HTTP-only cookies help protect authentication tokens.
-- Protected middleware validates user access.
-- Role-based authorization restricts sensitive operations.
-- Environment variables are used to store sensitive configuration.
+The application is deployed using the following services:
 
-## Future Enhancements
+- **Frontend:** Vercel
+- **Backend:** Render
+- **Database:** MongoDB Atlas
+- **Source Code:** GitHub
 
-- Payment gateway integration.
-- Customer reviews and ratings.
-- Booking notifications.
-- AI-based vendor recommendations.
-- Enhanced analytics and reporting.
-
-## What I Learned
-
-Through building BookEase, I gained practical experience in:
-
-- Developing REST APIs using Node.js and Express.js.
-- Designing MongoDB schemas using Mongoose.
-- Implementing JWT authentication and refresh token mechanisms.
-- Building role-based authorization systems.
-- Implementing CRUD operations.
-- Managing relationships between users, vendors, services, and bookings.
-- Connecting React frontend with backend APIs.
-- Testing APIs using Postman.
-- Organizing a full-stack application using a modular architecture.
-
-## Project Information
-
-**Project Name:** BookEase – Service Booking Platform
-
-**Project Type:** Full-Stack Web Application
-
-**Technology:** MERN Stack
-
-**Developer:** Hardik Tak
-
-**GitHub Repository:** https://github.com/hardiktak11-hub/BookEase
-
----
-
-If you find this project interesting, feel free to explore the repository!
+The React frontend
