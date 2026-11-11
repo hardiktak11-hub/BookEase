@@ -3,22 +3,42 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 
+const API_URL = "https://bookease-ya30.onrender.com/api/v1";
+
+const initialServiceData = {
+  name: "",
+  description: "",
+  category: "",
+  price: "",
+  duration: "",
+  image: "",
+};
+
 function VendorDashboard() {
   const [bookings, setBookings] = useState([]);
+  const [services, setServices] = useState([]);
+
   const [loading, setLoading] = useState(true);
+  const [servicesLoading, setServicesLoading] = useState(true);
+
   const [error, setError] = useState("");
+  const [serviceError, setServiceError] = useState("");
+
   const [updatingId, setUpdatingId] = useState(null);
 
+  const [showServiceForm, setShowServiceForm] = useState(false);
+  const [editingServiceId, setEditingServiceId] = useState(null);
+  const [savingService, setSavingService] = useState(false);
+
+  const [serviceData, setServiceData] = useState(initialServiceData);
+
+  // Fetch vendor bookings
   const fetchBookings = async () => {
     try {
       const response = await axios.get(
-        "https://bookease-ya30.onrender.com/api/v1/bookings/vendor-bookings",
-        {
-          withCredentials: true,
-        }
+        `${API_URL}/bookings/vendor-bookings`,
+        { withCredentials: true }
       );
-
-      console.log("Vendor bookings:", response.data);
 
       setBookings(response.data.bookings || []);
       setError("");
@@ -34,21 +54,45 @@ function VendorDashboard() {
     }
   };
 
+  // Fetch services created by this vendor
+  const fetchServices = async () => {
+    try {
+      setServicesLoading(true);
+      setServiceError("");
+
+      const response = await axios.get(
+        `${API_URL}/services/my-services`,
+        { withCredentials: true }
+      );
+
+      setServices(response.data.services || []);
+    } catch (error) {
+      console.error("Fetch vendor services error:", error);
+
+      setServiceError(
+        error.response?.data?.message ||
+        "Failed to fetch your services."
+      );
+    } finally {
+      setServicesLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchBookings();
+    fetchServices();
   }, []);
 
+  // Handle booking status updates
   const updateStatus = async (bookingId, status) => {
     try {
       setUpdatingId(bookingId);
       setError("");
 
       const response = await axios.patch(
-        `https://bookease-ya30.onrender.com/api/v1/bookings/${bookingId}/status`,
+        `${API_URL}/bookings/${bookingId}/status`,
         { status },
-        {
-          withCredentials: true,
-        }
+        { withCredentials: true }
       );
 
       alert(response.data.message || "Booking status updated!");
@@ -63,6 +107,124 @@ function VendorDashboard() {
       );
     } finally {
       setUpdatingId(null);
+    }
+  };
+
+  // Handle service form inputs
+  const handleServiceChange = (e) => {
+    const { name, value } = e.target;
+
+    setServiceData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  // Open create service form
+  const openCreateForm = () => {
+    setEditingServiceId(null);
+    setServiceData(initialServiceData);
+    setServiceError("");
+    setShowServiceForm(true);
+  };
+
+  // Open edit service form
+  const openEditForm = (service) => {
+    setEditingServiceId(service._id);
+
+    setServiceData({
+      name: service.name || "",
+      description: service.description || "",
+      category: service.category || "",
+      price: service.price ?? "",
+      duration: service.duration ?? "",
+      image: service.image || "",
+    });
+
+    setServiceError("");
+    setShowServiceForm(true);
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  // Create or update service
+  const handleServiceSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      setSavingService(true);
+      setServiceError("");
+
+      const payload = {
+        ...serviceData,
+        price: Number(serviceData.price),
+        duration: Number(serviceData.duration),
+      };
+
+      if (editingServiceId) {
+        const response = await axios.patch(
+          `${API_URL}/services/${editingServiceId}`,
+          payload,
+          { withCredentials: true }
+        );
+
+        alert(response.data.message || "Service updated successfully!");
+      } else {
+        const response = await axios.post(
+          `${API_URL}/services`,
+          payload,
+          { withCredentials: true }
+        );
+
+        alert(response.data.message || "Service created successfully!");
+      }
+
+      setServiceData(initialServiceData);
+      setEditingServiceId(null);
+      setShowServiceForm(false);
+
+      await fetchServices();
+    } catch (error) {
+      console.error("Save service error:", error);
+
+      setServiceError(
+        error.response?.data?.message ||
+        "Unable to save service."
+      );
+    } finally {
+      setSavingService(false);
+    }
+  };
+
+  // Delete (deactivate) a service
+  const handleDeleteService = async (serviceId) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to deactivate this service?"
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setServiceError("");
+
+      const response = await axios.delete(
+        `${API_URL}/services/${serviceId}`,
+        { withCredentials: true }
+      );
+
+      alert(response.data.message || "Service deleted successfully!");
+
+      await fetchServices();
+    } catch (error) {
+      console.error("Delete service error:", error);
+
+      setServiceError(
+        error.response?.data?.message ||
+        "Unable to delete service."
+      );
     }
   };
 
@@ -101,7 +263,6 @@ function VendorDashboard() {
         </div>
       </nav>
 
-      {/* Dashboard */}
       <div className="max-w-6xl mx-auto p-8">
 
         <h2 className="text-3xl font-bold mb-2">
@@ -109,37 +270,28 @@ function VendorDashboard() {
         </h2>
 
         <p className="text-gray-600 mb-8">
-          Manage your customer bookings.
+          Manage your services and customer bookings.
         </p>
 
         {/* Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
 
           <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-gray-500">
-              Total Bookings
-            </h3>
-
+            <h3 className="text-gray-500">Total Bookings</h3>
             <p className="text-3xl font-bold mt-2">
               {totalBookings}
             </p>
           </div>
 
           <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-gray-500">
-              Pending Bookings
-            </h3>
-
+            <h3 className="text-gray-500">Pending Bookings</h3>
             <p className="text-3xl font-bold text-yellow-500 mt-2">
               {pendingBookings}
             </p>
           </div>
 
           <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-gray-500">
-              Completed Bookings
-            </h3>
-
+            <h3 className="text-gray-500">Completed Bookings</h3>
             <p className="text-3xl font-bold text-green-600 mt-2">
               {completedBookings}
             </p>
@@ -147,14 +299,260 @@ function VendorDashboard() {
 
         </div>
 
-        {/* Error */}
+        {/* Booking error */}
         {error && (
           <p className="text-red-600 mb-4">
             {error}
           </p>
         )}
 
-        {/* Bookings Table */}
+        {/* My Services */}
+        <div className="bg-white rounded-lg shadow p-6 mb-8">
+
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-xl font-bold">
+              My Services
+            </h3>
+
+            <button
+              onClick={openCreateForm}
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+            >
+              + Add New Service
+            </button>
+          </div>
+
+          {/* Create / Edit Service Form */}
+          {showServiceForm && (
+            <form
+              onSubmit={handleServiceSubmit}
+              className="bg-gray-50 border rounded-lg p-6 mb-8"
+            >
+              <h4 className="text-lg font-bold mb-5">
+                {editingServiceId ? "Edit Service" : "Create New Service"}
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                <div>
+                  <label className="block mb-2 font-medium">
+                    Service Name
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={serviceData.name}
+                    onChange={handleServiceChange}
+                    placeholder="e.g. Home Cleaning"
+                    required
+                    className="w-full border rounded-md p-3"
+                  />
+                </div>
+
+                <div>
+                  <label className="block mb-2 font-medium">
+                    Category
+                  </label>
+                  <input
+                    type="text"
+                    name="category"
+                    value={serviceData.category}
+                    onChange={handleServiceChange}
+                    placeholder="e.g. Cleaning"
+                    required
+                    className="w-full border rounded-md p-3"
+                  />
+                </div>
+
+                <div>
+                  <label className="block mb-2 font-medium">
+                    Price (₹)
+                  </label>
+                  <input
+                    type="number"
+                    name="price"
+                    value={serviceData.price}
+                    onChange={handleServiceChange}
+                    placeholder="Enter price"
+                    min="1"
+                    required
+                    className="w-full border rounded-md p-3"
+                  />
+                </div>
+
+                <div>
+                  <label className="block mb-2 font-medium">
+                    Duration (minutes)
+                  </label>
+                  <input
+                    type="number"
+                    name="duration"
+                    value={serviceData.duration}
+                    onChange={handleServiceChange}
+                    placeholder="e.g. 60"
+                    min="1"
+                    required
+                    className="w-full border rounded-md p-3"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block mb-2 font-medium">
+                    Image URL (optional)
+                  </label>
+                  <input
+                    type="url"
+                    name="image"
+                    value={serviceData.image}
+                    onChange={handleServiceChange}
+                    placeholder="https://example.com/image.jpg"
+                    className="w-full border rounded-md p-3"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block mb-2 font-medium">
+                    Description
+                  </label>
+                  <textarea
+                    name="description"
+                    value={serviceData.description}
+                    onChange={handleServiceChange}
+                    placeholder="Describe the service you provide..."
+                    required
+                    rows="4"
+                    className="w-full border rounded-md p-3"
+                  />
+                </div>
+
+              </div>
+
+              {serviceError && (
+                <p className="text-red-600 mt-4">
+                  {serviceError}
+                </p>
+              )}
+
+              <div className="flex gap-3 mt-6">
+
+                <button
+                  type="submit"
+                  disabled={savingService}
+                  className="bg-green-600 text-white px-5 py-2 rounded-md hover:bg-green-700 disabled:opacity-50"
+                >
+                  {savingService
+                    ? "Saving..."
+                    : editingServiceId
+                    ? "Update Service"
+                    : "Create Service"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowServiceForm(false);
+                    setEditingServiceId(null);
+                    setServiceData(initialServiceData);
+                    setServiceError("");
+                  }}
+                  className="bg-gray-300 px-5 py-2 rounded-md hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+
+              </div>
+            </form>
+          )}
+
+          {/* Service error */}
+          {serviceError && !showServiceForm && (
+            <p className="text-red-600 mb-4">
+              {serviceError}
+            </p>
+          )}
+
+          {/* Services List */}
+          {servicesLoading ? (
+            <p className="text-center py-8 text-gray-500">
+              Loading your services...
+            </p>
+          ) : services.length === 0 ? (
+            <p className="text-center py-8 text-gray-500">
+              You haven't created any services yet. Click "Add New Service" to get started.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+              {services.map((service) => (
+
+                <div
+                  key={service._id}
+                  className="border rounded-lg p-5 flex flex-col"
+                >
+
+                  {service.image && (
+                    <img
+                      src={service.image}
+                      alt={service.name}
+                      className="w-full h-44 object-cover rounded-md mb-4"
+                    />
+                  )}
+
+                  <h4 className="text-lg font-bold">
+                    {service.name}
+                  </h4>
+
+                  <p className="text-sm text-blue-600 mt-1">
+                    {service.category}
+                  </p>
+
+                  <p className="text-gray-600 text-sm mt-3">
+                    {service.description}
+                  </p>
+
+                  <div className="flex justify-between mt-4 font-medium">
+                    <span>₹{service.price}</span>
+                    <span>{service.duration} minutes</span>
+                  </div>
+
+                  <p className={`text-sm mt-3 ${
+                    service.isActive
+                      ? "text-green-600"
+                      : "text-red-600"
+                  }`}>
+                    {service.isActive ? "Active" : "Inactive"}
+                  </p>
+
+                  <div className="flex gap-3 mt-5">
+
+                    <button
+                      onClick={() => openEditForm(service)}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                    >
+                      Edit
+                    </button>
+
+                    {service.isActive && (
+                      <button
+                        onClick={() => handleDeleteService(service._id)}
+                        className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+                      >
+                        Delete
+                      </button>
+                    )}
+
+                  </div>
+
+                </div>
+
+              ))}
+
+            </div>
+          )}
+
+        </div>
+
+        {/* Customer Bookings */}
         <div className="bg-white rounded-lg shadow p-6">
 
           <h3 className="text-xl font-bold mb-6">

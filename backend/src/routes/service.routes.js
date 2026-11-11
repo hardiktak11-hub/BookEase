@@ -1,6 +1,6 @@
 import express from "express";
 
-import { createService,getAllServices,getServiceById,updateService,deleteService } from "../controllers/service.controller.js";
+import { createService,getAllServices,getServiceById,updateService,deleteService,getVendorServices} from "../controllers/service.controller.js";
 
 import { verifyJWT } from "../middleware/auth.middleware.js";
 import authorizeRoles from "../middleware/role.middleware.js";
@@ -38,6 +38,15 @@ router.delete(
   authorizeRoles("vendor"),
   isApprovedVendor,
   deleteService
+);
+
+// Get logged-in vendor's services
+router.get(
+  "/my-services",
+  verifyJWT,
+  authorizeRoles("vendor"),
+  isApprovedVendor,
+  getVendorServices
 );
 
 export default router;

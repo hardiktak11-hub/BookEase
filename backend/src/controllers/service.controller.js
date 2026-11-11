@@ -170,3 +170,26 @@ export const deleteService = async (req, res) => {
     });
   }
 };
+
+ // Get services created by the logged-in vendor
+export const getVendorServices = async (req, res) => {
+  try {
+    const services = await Service.find({
+      vendorId: req.vendorProfile._id
+    });
+
+    return res.status(200).json({
+      success: true,
+      count: services.length,
+      services
+    });
+
+  } catch (error) {
+    console.error("Get vendor services error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
+  }
+};
