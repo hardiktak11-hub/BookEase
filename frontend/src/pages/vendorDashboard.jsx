@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
@@ -14,23 +13,29 @@ const initialServiceData = {
   image: "",
 };
 
+// Backend convention: Sunday = 0, Monday = 1, ... Saturday = 6.
+const DAYS = [
+  { name: "Sunday", value: 0 },
+  { name: "Monday", value: 1 },
+  { name: "Tuesday", value: 2 },
+  { name: "Wednesday", value: 3 },
+  { name: "Thursday", value: 4 },
+  { name: "Friday", value: 5 },
+  { name: "Saturday", value: 6 },
+];
+
+const getDayName = (dayOfWeek) => {
+  const numericDay = Number(dayOfWeek);
+  return DAYS.find((day) => day.value === numericDay)?.name ?? "Unknown day";
+};
+
 const initialAvailability = {
-  dayOfWeek: "Monday",
+  dayOfWeek: 1,
   startTime: "09:00",
   endTime: "18:00",
   slotDuration: 60,
   isAvailable: true,
 };
-
-const DAYS = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-  "Sunday",
-];
 
 function VendorDashboard() {
   // Booking states
@@ -55,10 +60,7 @@ function VendorDashboard() {
   const [availabilitySaving, setAvailabilitySaving] = useState(false);
   const [availabilityError, setAvailabilityError] = useState("");
 
-  // =====================================
-  // FETCH BOOKINGS
-  // =====================================
-
+  // Fetch bookings
   const fetchBookings = async () => {
     try {
       const response = await axios.get(
@@ -70,20 +72,15 @@ function VendorDashboard() {
       setError("");
     } catch (error) {
       console.error("Fetch bookings error:", error);
-
       setError(
-        error.response?.data?.message ||
-        "Failed to fetch bookings."
+        error.response?.data?.message || "Failed to fetch bookings."
       );
     } finally {
       setLoading(false);
     }
   };
 
-  // =====================================
-  // FETCH SERVICES
-  // =====================================
-
+  // Fetch services
   const fetchServices = async () => {
     try {
       setServicesLoading(true);
@@ -97,20 +94,15 @@ function VendorDashboard() {
       setServices(response.data.services || []);
     } catch (error) {
       console.error("Fetch services error:", error);
-
       setServiceError(
-        error.response?.data?.message ||
-        "Failed to fetch your services."
+        error.response?.data?.message || "Failed to fetch your services."
       );
     } finally {
       setServicesLoading(false);
     }
   };
 
-  // =====================================
-  // FETCH AVAILABILITY
-  // =====================================
-
+  // Fetch availability
   const fetchAvailability = async () => {
     try {
       setAvailabilityLoading(true);
@@ -124,10 +116,8 @@ function VendorDashboard() {
       setAvailability(response.data.availability || []);
     } catch (error) {
       console.error("Fetch availability error:", error);
-
       setAvailabilityError(
-        error.response?.data?.message ||
-        "Failed to fetch availability."
+        error.response?.data?.message || "Failed to fetch availability."
       );
     } finally {
       setAvailabilityLoading(false);
@@ -140,10 +130,7 @@ function VendorDashboard() {
     fetchAvailability();
   }, []);
 
-  // =====================================
-  // UPDATE BOOKING STATUS
-  // =====================================
-
+  // Update booking status
   const updateStatus = async (bookingId, status) => {
     try {
       setUpdatingId(bookingId);
@@ -156,24 +143,19 @@ function VendorDashboard() {
       );
 
       alert(response.data.message || "Booking status updated!");
-
       await fetchBookings();
     } catch (error) {
       console.error("Update booking error:", error);
-
       setError(
         error.response?.data?.message ||
-        "Unable to update booking status."
+          "Unable to update booking status."
       );
     } finally {
       setUpdatingId(null);
     }
   };
 
-  // =====================================
-  // SERVICE FORM HANDLING
-  // =====================================
-
+  // Service form handling
   const handleServiceChange = (e) => {
     const { name, value } = e.target;
 
@@ -192,7 +174,6 @@ function VendorDashboard() {
 
   const openEditForm = (service) => {
     setEditingServiceId(service._id);
-
     setServiceData({
       name: service.name || "",
       description: service.description || "",
@@ -205,16 +186,10 @@ function VendorDashboard() {
     setServiceError("");
     setShowServiceForm(true);
 
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // =====================================
-  // CREATE / UPDATE SERVICE
-  // =====================================
-
+  // Create / update service
   const handleServiceSubmit = async (e) => {
     e.preventDefault();
 
@@ -249,24 +224,18 @@ function VendorDashboard() {
       setServiceData(initialServiceData);
       setEditingServiceId(null);
       setShowServiceForm(false);
-
       await fetchServices();
     } catch (error) {
       console.error("Save service error:", error);
-
       setServiceError(
-        error.response?.data?.message ||
-        "Unable to save service."
+        error.response?.data?.message || "Unable to save service."
       );
     } finally {
       setSavingService(false);
     }
   };
 
-  // =====================================
-  // DELETE SERVICE
-  // =====================================
-
+  // Delete / deactivate service
   const handleDeleteService = async (serviceId) => {
     const confirmed = window.confirm(
       "Are you sure you want to deactivate this service?"
@@ -283,35 +252,31 @@ function VendorDashboard() {
       );
 
       alert(response.data.message || "Service deactivated successfully!");
-
       await fetchServices();
     } catch (error) {
       console.error("Delete service error:", error);
-
       setServiceError(
-        error.response?.data?.message ||
-        "Unable to delete service."
+        error.response?.data?.message || "Unable to delete service."
       );
     }
   };
 
-  // =====================================
-  // AVAILABILITY FORM HANDLING
-  // =====================================
-
+  // Availability form handling
   const handleAvailabilityChange = (e) => {
     const { name, value, type, checked } = e.target;
 
     setAvailabilityForm((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]:
+        type === "checkbox"
+          ? checked
+          : name === "dayOfWeek" || name === "slotDuration"
+          ? Number(value)
+          : value,
     }));
   };
 
-  // =====================================
-  // SAVE AVAILABILITY
-  // =====================================
-
+  // Save availability
   const handleAvailabilitySubmit = async (e) => {
     e.preventDefault();
 
@@ -321,6 +286,7 @@ function VendorDashboard() {
 
       const payload = {
         ...availabilityForm,
+        dayOfWeek: Number(availabilityForm.dayOfWeek),
         slotDuration: Number(availabilityForm.slotDuration),
       };
 
@@ -331,56 +297,39 @@ function VendorDashboard() {
       );
 
       alert(response.data.message || "Availability saved successfully!");
-
       await fetchAvailability();
     } catch (error) {
       console.error("Save availability error:", error);
-
       setAvailabilityError(
-        error.response?.data?.message ||
-        "Unable to save availability."
+        error.response?.data?.message || "Unable to save availability."
       );
     } finally {
       setAvailabilitySaving(false);
     }
   };
 
-  // =====================================
-  // EDIT AVAILABILITY
-  // =====================================
-
+  // Edit availability
   const editAvailability = (day) => {
     setAvailabilityForm({
-      dayOfWeek: day.dayOfWeek,
+      // Convert to a number in case the API returns a numeric string.
+      dayOfWeek: Number(day.dayOfWeek),
       startTime: day.startTime || "09:00",
       endTime: day.endTime || "18:00",
-      slotDuration: day.slotDuration || 60,
-      isAvailable: day.isAvailable,
+      slotDuration: Number(day.slotDuration) || 60,
+      isAvailable: Boolean(day.isAvailable),
     });
 
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // =====================================
-  // BOOKING STATISTICS
-  // =====================================
-
+  // Booking statistics
   const totalBookings = bookings.length;
-
   const pendingBookings = bookings.filter(
     (booking) => booking.status === "pending"
   ).length;
-
   const completedBookings = bookings.filter(
     (booking) => booking.status === "completed"
   ).length;
-
-  // =====================================
-  // LOADING
-  // =====================================
 
   if (loading) {
     return (
@@ -390,18 +339,11 @@ function VendorDashboard() {
     );
   }
 
-  // =====================================
-  // MAIN DASHBOARD
-  // =====================================
-
   return (
     <div className="min-h-screen bg-gray-100">
-
       {/* NAVBAR */}
       <nav className="bg-white shadow px-8 py-4 flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-blue-600">
-          BookEase
-        </h1>
+        <h1 className="text-2xl font-bold text-blue-600">BookEase</h1>
 
         <div className="flex gap-6">
           <Link to="/">Home</Link>
@@ -412,69 +354,40 @@ function VendorDashboard() {
       </nav>
 
       <div className="max-w-6xl mx-auto p-8">
-
-        <h2 className="text-3xl font-bold mb-2">
-          Vendor Dashboard
-        </h2>
+        <h2 className="text-3xl font-bold mb-2">Vendor Dashboard</h2>
 
         <p className="text-gray-600 mb-8">
           Manage your services, availability and customer bookings.
         </p>
 
-        {/* ================================= */}
         {/* BOOKING STATISTICS */}
-        {/* ================================= */}
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-
           <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-gray-500">
-              Total Bookings
-            </h3>
-
-            <p className="text-3xl font-bold mt-2">
-              {totalBookings}
-            </p>
+            <h3 className="text-gray-500">Total Bookings</h3>
+            <p className="text-3xl font-bold mt-2">{totalBookings}</p>
           </div>
 
           <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-gray-500">
-              Pending Bookings
-            </h3>
-
+            <h3 className="text-gray-500">Pending Bookings</h3>
             <p className="text-3xl font-bold text-yellow-500 mt-2">
               {pendingBookings}
             </p>
           </div>
 
           <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-gray-500">
-              Completed Bookings
-            </h3>
-
+            <h3 className="text-gray-500">Completed Bookings</h3>
             <p className="text-3xl font-bold text-green-600 mt-2">
               {completedBookings}
             </p>
           </div>
-
         </div>
 
-        {error && (
-          <p className="text-red-600 mb-4">
-            {error}
-          </p>
-        )}
+        {error && <p className="text-red-600 mb-4">{error}</p>}
 
-        {/* ================================= */}
         {/* MY SERVICES */}
-        {/* ================================= */}
-
         <div className="bg-white rounded-lg shadow p-6 mb-8">
-
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-bold">
-              My Services
-            </h3>
+            <h3 className="text-xl font-bold">My Services</h3>
 
             <button
               onClick={openCreateForm}
@@ -484,25 +397,20 @@ function VendorDashboard() {
             </button>
           </div>
 
-          {/* SERVICE FORM */}
-
           {showServiceForm && (
             <form
               onSubmit={handleServiceSubmit}
               className="bg-gray-50 border rounded-lg p-6 mb-8"
             >
-
               <h4 className="text-lg font-bold mb-5">
                 {editingServiceId ? "Edit Service" : "Create New Service"}
               </h4>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
                 <div>
                   <label className="block mb-2 font-medium">
                     Service Name
                   </label>
-
                   <input
                     type="text"
                     name="name"
@@ -515,10 +423,7 @@ function VendorDashboard() {
                 </div>
 
                 <div>
-                  <label className="block mb-2 font-medium">
-                    Category
-                  </label>
-
+                  <label className="block mb-2 font-medium">Category</label>
                   <input
                     type="text"
                     name="category"
@@ -531,10 +436,7 @@ function VendorDashboard() {
                 </div>
 
                 <div>
-                  <label className="block mb-2 font-medium">
-                    Price (₹)
-                  </label>
-
+                  <label className="block mb-2 font-medium">Price (₹)</label>
                   <input
                     type="number"
                     name="price"
@@ -551,7 +453,6 @@ function VendorDashboard() {
                   <label className="block mb-2 font-medium">
                     Duration (minutes)
                   </label>
-
                   <input
                     type="number"
                     name="duration"
@@ -568,7 +469,6 @@ function VendorDashboard() {
                   <label className="block mb-2 font-medium">
                     Image URL (optional)
                   </label>
-
                   <input
                     type="url"
                     name="image"
@@ -583,7 +483,6 @@ function VendorDashboard() {
                   <label className="block mb-2 font-medium">
                     Description
                   </label>
-
                   <textarea
                     name="description"
                     value={serviceData.description}
@@ -594,17 +493,13 @@ function VendorDashboard() {
                     className="w-full border rounded-md p-3"
                   />
                 </div>
-
               </div>
 
               {serviceError && (
-                <p className="text-red-600 mt-4">
-                  {serviceError}
-                </p>
+                <p className="text-red-600 mt-4">{serviceError}</p>
               )}
 
               <div className="flex gap-3 mt-6">
-
                 <button
                   type="submit"
                   disabled={savingService}
@@ -629,18 +524,12 @@ function VendorDashboard() {
                 >
                   Cancel
                 </button>
-
               </div>
-
             </form>
           )}
 
-          {/* SERVICE LIST */}
-
           {serviceError && !showServiceForm && (
-            <p className="text-red-600 mb-4">
-              {serviceError}
-            </p>
+            <p className="text-red-600 mb-4">{serviceError}</p>
           )}
 
           {servicesLoading ? (
@@ -652,16 +541,12 @@ function VendorDashboard() {
               You haven't created any services yet.
             </p>
           ) : (
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
               {services.map((service) => (
-
                 <div
                   key={service._id}
                   className="border rounded-lg p-5 flex flex-col"
                 >
-
                   {service.image && (
                     <img
                       src={service.image}
@@ -670,14 +555,10 @@ function VendorDashboard() {
                     />
                   )}
 
-                  <h4 className="text-lg font-bold">
-                    {service.name}
-                  </h4>
-
+                  <h4 className="text-lg font-bold">{service.name}</h4>
                   <p className="text-sm text-blue-600 mt-1">
                     {service.category}
                   </p>
-
                   <p className="text-gray-600 text-sm mt-3">
                     {service.description}
                   </p>
@@ -687,16 +568,15 @@ function VendorDashboard() {
                     <span>{service.duration} minutes</span>
                   </div>
 
-                  <p className={`text-sm mt-3 ${
-                    service.isActive
-                      ? "text-green-600"
-                      : "text-red-600"
-                  }`}>
+                  <p
+                    className={`text-sm mt-3 ${
+                      service.isActive ? "text-green-600" : "text-red-600"
+                    }`}
+                  >
                     {service.isActive ? "Active" : "Inactive"}
                   </p>
 
                   <div className="flex gap-3 mt-5">
-
                     <button
                       onClick={() => openEditForm(service)}
                       className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
@@ -712,52 +592,32 @@ function VendorDashboard() {
                         Delete
                       </button>
                     )}
-
                   </div>
-
                 </div>
-
               ))}
-
             </div>
           )}
-
         </div>
 
-        {/* ================================= */}
         {/* MANAGE AVAILABILITY */}
-        {/* ================================= */}
-
         <div className="bg-white rounded-lg shadow p-6 mb-8">
-
-          <h3 className="text-xl font-bold mb-2">
-            Manage Availability
-          </h3>
+          <h3 className="text-xl font-bold mb-2">Manage Availability</h3>
 
           <p className="text-gray-500 mb-6">
             Set your working days and available time slots.
           </p>
 
           {availabilityError && (
-            <p className="text-red-600 mb-4">
-              {availabilityError}
-            </p>
+            <p className="text-red-600 mb-4">{availabilityError}</p>
           )}
-
-          {/* AVAILABILITY FORM */}
 
           <form
             onSubmit={handleAvailabilitySubmit}
             className="bg-gray-50 border rounded-lg p-5 mb-8"
           >
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
               <div>
-                <label className="block font-medium mb-2">
-                  Select Day
-                </label>
-
+                <label className="block font-medium mb-2">Select Day</label>
                 <select
                   name="dayOfWeek"
                   value={availabilityForm.dayOfWeek}
@@ -765,8 +625,8 @@ function VendorDashboard() {
                   className="w-full border rounded-md p-3"
                 >
                   {DAYS.map((day) => (
-                    <option key={day} value={day}>
-                      {day}
+                    <option key={day.value} value={day.value}>
+                      {day.name}
                     </option>
                   ))}
                 </select>
@@ -776,7 +636,6 @@ function VendorDashboard() {
                 <label className="block font-medium mb-2">
                   Slot Duration
                 </label>
-
                 <select
                   name="slotDuration"
                   value={availabilityForm.slotDuration}
@@ -791,10 +650,7 @@ function VendorDashboard() {
               </div>
 
               <div>
-                <label className="block font-medium mb-2">
-                  Start Time
-                </label>
-
+                <label className="block font-medium mb-2">Start Time</label>
                 <input
                   type="time"
                   name="startTime"
@@ -807,10 +663,7 @@ function VendorDashboard() {
               </div>
 
               <div>
-                <label className="block font-medium mb-2">
-                  End Time
-                </label>
-
+                <label className="block font-medium mb-2">End Time</label>
                 <input
                   type="time"
                   name="endTime"
@@ -821,7 +674,6 @@ function VendorDashboard() {
                   className="w-full border rounded-md p-3 disabled:bg-gray-200"
                 />
               </div>
-
             </div>
 
             <label className="flex items-center gap-2 mt-5">
@@ -831,10 +683,7 @@ function VendorDashboard() {
                 checked={availabilityForm.isAvailable}
                 onChange={handleAvailabilityChange}
               />
-
-              <span className="font-medium">
-                Available on this day
-              </span>
+              <span className="font-medium">Available on this day</span>
             </label>
 
             <button
@@ -842,43 +691,27 @@ function VendorDashboard() {
               disabled={availabilitySaving}
               className="mt-5 bg-blue-600 text-white px-5 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
             >
-              {availabilitySaving
-                ? "Saving..."
-                : "Save Availability"}
+              {availabilitySaving ? "Saving..." : "Save Availability"}
             </button>
-
           </form>
 
-          {/* WEEKLY SCHEDULE */}
-
-          <h4 className="font-bold text-lg mb-4">
-            Your Weekly Schedule
-          </h4>
+          <h4 className="font-bold text-lg mb-4">Your Weekly Schedule</h4>
 
           {availabilityLoading ? (
-            <p className="text-gray-500">
-              Loading availability...
-            </p>
+            <p className="text-gray-500">Loading availability...</p>
           ) : availability.length === 0 ? (
-            <p className="text-gray-500">
-              No availability configured yet.
-            </p>
+            <p className="text-gray-500">No availability configured yet.</p>
           ) : (
-
             <div className="space-y-3">
-
               {availability.map((day) => (
-
                 <div
                   key={day._id || day.dayOfWeek}
                   className="border rounded-lg p-4 flex flex-col md:flex-row md:items-center justify-between gap-3"
                 >
-
                   <div>
                     <p className="font-semibold">
-                      {day.dayOfWeek}
+                      {getDayName(day.dayOfWeek)}
                     </p>
-
                     <p className="text-sm text-gray-500">
                       {day.isAvailable
                         ? `${day.startTime} - ${day.endTime} | ${day.slotDuration} min slots`
@@ -887,12 +720,9 @@ function VendorDashboard() {
                   </div>
 
                   <div className="flex items-center gap-3">
-
                     <span
                       className={`text-sm font-medium ${
-                        day.isAvailable
-                          ? "text-green-600"
-                          : "text-red-600"
+                        day.isAvailable ? "text-green-600" : "text-red-600"
                       }`}
                     >
                       {day.isAvailable ? "Available" : "Unavailable"}
@@ -905,38 +735,24 @@ function VendorDashboard() {
                     >
                       Edit
                     </button>
-
                   </div>
-
                 </div>
-
               ))}
-
             </div>
           )}
-
         </div>
 
-        {/* ================================= */}
         {/* CUSTOMER BOOKINGS */}
-        {/* ================================= */}
-
         <div className="bg-white rounded-lg shadow p-6">
-
-          <h3 className="text-xl font-bold mb-6">
-            Customer Bookings
-          </h3>
+          <h3 className="text-xl font-bold mb-6">Customer Bookings</h3>
 
           {bookings.length === 0 ? (
             <p className="text-gray-500 text-center py-8">
               No bookings received yet.
             </p>
           ) : (
-
             <div className="overflow-x-auto">
-
               <table className="w-full text-left">
-
                 <thead>
                   <tr className="border-b bg-gray-50">
                     <th className="p-3">Customer</th>
@@ -950,16 +766,12 @@ function VendorDashboard() {
                 </thead>
 
                 <tbody>
-
                   {bookings.map((booking) => (
-
                     <tr key={booking._id} className="border-b">
-
                       <td className="p-3">
                         <p className="font-medium">
                           {booking.customerId?.username || "Customer"}
                         </p>
-
                         <p className="text-sm text-gray-500">
                           {booking.customerId?.email}
                         </p>
@@ -968,28 +780,18 @@ function VendorDashboard() {
                       <td className="p-3">
                         {booking.serviceId?.name || "Service"}
                       </td>
-
-                      <td className="p-3">
-                        {booking.bookingDate}
-                      </td>
-
+                      <td className="p-3">{booking.bookingDate}</td>
                       <td className="p-3">
                         {booking.startTime} - {booking.endTime}
                       </td>
-
                       <td className="p-3 font-medium">
                         ₹{booking.totalPrice}
                       </td>
-
-                      <td className="p-3 capitalize">
-                        {booking.status}
-                      </td>
+                      <td className="p-3 capitalize">{booking.status}</td>
 
                       <td className="p-3">
-
                         {booking.status === "pending" && (
                           <div className="flex gap-2">
-
                             <button
                               disabled={updatingId === booking._id}
                               onClick={() =>
@@ -1009,7 +811,6 @@ function VendorDashboard() {
                             >
                               Reject
                             </button>
-
                           </div>
                         )}
 
@@ -1026,32 +827,20 @@ function VendorDashboard() {
                         )}
 
                         {booking.status === "completed" && (
-                          <span className="text-green-600">
-                            Completed
-                          </span>
+                          <span className="text-green-600">Completed</span>
                         )}
 
                         {booking.status === "cancelled" && (
-                          <span className="text-red-600">
-                            Cancelled
-                          </span>
+                          <span className="text-red-600">Cancelled</span>
                         )}
-
                       </td>
-
                     </tr>
-
                   ))}
-
                 </tbody>
-
               </table>
-
             </div>
           )}
-
         </div>
-
       </div>
     </div>
   );
