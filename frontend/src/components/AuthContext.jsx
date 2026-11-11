@@ -7,20 +7,24 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchUser = async () => {
-    try {
-      const response = await axios.get(
-        "https://bookease-ya30.onrender.com/api/v1/auth/me",
-        { withCredentials: true }
-      );
+const fetchUser = async () => {
+  setLoading(true);
 
-      setUser(response.data.user);
-    } catch (error) {
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    const response = await axios.get(
+      "https://bookease-ya30.onrender.com/api/v1/auth/me",
+      { withCredentials: true }
+    );
+
+    setUser(response.data.user);
+    return response.data.user;
+  } catch (error) {
+    setUser(null);
+    return null;
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchUser();

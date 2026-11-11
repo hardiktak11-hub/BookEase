@@ -2,9 +2,11 @@
 import { useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../components/AuthContext";
 
 function Login() {
   const navigate = useNavigate();
+  const { fetchUser } = useAuth();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -28,6 +30,7 @@ function Login() {
       setLoading(true);
       setError("");
 
+      // Login API request
       const response = await axios.post(
         "https://bookease-ya30.onrender.com/api/v1/auth/login",
         formData,
@@ -37,6 +40,16 @@ function Login() {
       );
 
       console.log("Login successful:", response.data);
+
+      // Update AuthContext immediately after login
+      const loggedInUser = await fetchUser();
+
+      if (!loggedInUser) {
+        setError(
+          "Login successful, but authentication could not be verified. Please try again."
+        );
+        return;
+      }
 
       alert("Login successful!");
 
@@ -146,3 +159,4 @@ function Login() {
 }
 
 export default Login;
+
